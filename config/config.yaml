@@ -1,0 +1,23 @@
+server:
+    host: "0.0.0.0"
+    port: 8080
+
+http:
+    read_timeout: 5s
+    write_timeout: 10s
+    idle_timeout: 120s
+
+storage:
+    memory:
+      max_size: 100000
+    postgres:
+        max_connections: 25
+
+rate_limit:
+    requests_per_second: 100
+    burst: 200
+
+shortener:
+    short_length: 10
+    alphabet: "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM_0123456789"
+    max_url_length: 1000
