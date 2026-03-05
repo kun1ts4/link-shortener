@@ -17,7 +17,7 @@ type PgRepository struct {
 func NewPostgresRepository(cfg config.PostgresConfig) (*PgRepository, error) {
 	poolConfig, err := pgxpool.ParseConfig(cfg.DSN)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse config: %w", err)
+		return nil, fmt.Errorf("parse config: %w", err)
 	}
 
 	poolConfig.MaxConns = cfg.MaxConnections
@@ -30,7 +30,7 @@ func NewPostgresRepository(cfg config.PostgresConfig) (*PgRepository, error) {
 
 	err = pool.Ping(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
+		return nil, fmt.Errorf("ping database: %w", err)
 	}
 
 	return &PgRepository{
@@ -51,7 +51,7 @@ func (r *PgRepository) Create(link *domain.Link) error {
 	_, err := r.pool.Exec(context.Background(), query, dbLink.Original, dbLink.Short, dbLink.Clicks, dbLink.CreatedAt)
 
 	if err != nil {
-		return fmt.Errorf("create link in db: %w", err)
+		return fmt.Errorf("create link: %w", err)
 	}
 
 	return nil
@@ -64,7 +64,7 @@ func (r *PgRepository) FindByShort(short string) (*domain.Link, error) {
 	err := r.pool.QueryRow(context.Background(), query, short).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
 
 	if err != nil {
-		return nil, fmt.Errorf("find by short %s: %w", short, domain.ErrNotFound)
+		return nil, domain.ErrNotFound
 	}
 
 	return dbLink.ToDomain(), nil
@@ -77,31 +77,18 @@ func (r *PgRepository) FindByOriginal(original string) (*domain.Link, error) {
 	err := r.pool.QueryRow(context.Background(), query, original).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
 
 	if err != nil {
-		return nil, fmt.Errorf("find by original: %w", domain.ErrNotFound)
+		return nil, domain.ErrNotFound
 	}
 
 	return dbLink.ToDomain(), nil
 }
 
-func (r *PgRepository) FindByID(id int64) (*domain.Link, error) {
-	query := `SELECT id, original, short, clicks, created_at FROM links WHERE id = $1`
+func (r *PgRepository) IncrementClicks(short string) error {
+	query := `UPDATE links SET clicks = clicks + 1 WHERE short = $1`
 
-	var dbLink LinkDB
-	err := r.pool.QueryRow(context.Background(), query, id).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
-
+	_, err := r.pool.Exec(context.Background(), query, short)
 	if err != nil {
-		return nil, fmt.Errorf("find by id %d: %w", id, domain.ErrNotFound)
-	}
-
-	return dbLink.ToDomain(), nil
-}
-
-func (r *PgRepository) IncrementClicks(id int64) error {
-	query := `UPDATE links SET clicks = clicks + 1 WHERE id = $1`
-
-	_, err := r.pool.Exec(context.Background(), query, id)
-	if err != nil {
-		return fmt.Errorf("increment clicks for id %d: %w", id, err)
+		return fmt.Errorf("increment clicks for %s: %w", short, err)
 	}
 
 	return nil

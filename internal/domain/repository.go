@@ -2,7 +2,7 @@ package domain
 
 type Repository interface {
 	Create(link *Link) error
-	FindByShort(key string) (*Link, error)
+	FindByShort(short string) (*Link, error)
 	FindByOriginal(original string) (*Link, error)
-	IncrementClicks(id int64) error
+	IncrementClicks(short string) error
 }

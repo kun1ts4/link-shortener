@@ -6,6 +6,7 @@ require (
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/pressly/goose/v3 v3.27.0
 	github.com/stretchr/testify v1.11.1
+	golang.org/x/crypto v0.48.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
