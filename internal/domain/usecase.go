@@ -1,6 +1,8 @@
 package domain
 
+import "context"
+
 type UseCase interface {
-	CreateShort(original string) (*Link, error)
-	GetOriginalLink(short string) (*Link, error)
+	CreateShort(ctx context.Context, original string) (*Link, error)
+	GetOriginalLink(ctx context.Context, short string) (*Link, error)
 }

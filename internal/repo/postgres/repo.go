@@ -24,6 +24,9 @@ func NewPostgresRepository(cfg config.PostgresConfig) (*PgRepository, error) {
 	poolConfig.MinConns = cfg.MinConnections
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
+	if err != nil {
+		return nil, fmt.Errorf("create pool: %w", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -44,12 +47,11 @@ func (r *PgRepository) Close() {
 	}
 }
 
-func (r *PgRepository) Create(link *domain.Link) error {
+func (r *PgRepository) Create(ctx context.Context, link *domain.Link) error {
 	dbLink := FromDomain(link)
 
 	query := `INSERT INTO links (original, short, clicks, created_at) VALUES ($1, $2, $3, $4)`
-	_, err := r.pool.Exec(context.Background(), query, dbLink.Original, dbLink.Short, dbLink.Clicks, dbLink.CreatedAt)
-
+	_, err := r.pool.Exec(ctx, query, dbLink.Original, dbLink.Short, dbLink.Clicks, dbLink.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("create link: %w", err)
 	}
@@ -57,12 +59,11 @@ func (r *PgRepository) Create(link *domain.Link) error {
 	return nil
 }
 
-func (r *PgRepository) FindByShort(short string) (*domain.Link, error) {
+func (r *PgRepository) FindByShort(ctx context.Context, short string) (*domain.Link, error) {
 	query := `SELECT id, original, short, clicks, created_at FROM links WHERE short = $1`
 
 	var dbLink LinkDB
-	err := r.pool.QueryRow(context.Background(), query, short).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
-
+	err := r.pool.QueryRow(ctx, query, short).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
 	if err != nil {
 		return nil, domain.ErrNotFound
 	}
@@ -70,12 +71,11 @@ func (r *PgRepository) FindByShort(short string) (*domain.Link, error) {
 	return dbLink.ToDomain(), nil
 }
 
-func (r *PgRepository) FindByOriginal(original string) (*domain.Link, error) {
+func (r *PgRepository) FindByOriginal(ctx context.Context, original string) (*domain.Link, error) {
 	query := `SELECT id, original, short, clicks, created_at FROM links WHERE original = $1`
 
 	var dbLink LinkDB
-	err := r.pool.QueryRow(context.Background(), query, original).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
-
+	err := r.pool.QueryRow(ctx, query, original).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
 	if err != nil {
 		return nil, domain.ErrNotFound
 	}
@@ -83,10 +83,10 @@ func (r *PgRepository) FindByOriginal(original string) (*domain.Link, error) {
 	return dbLink.ToDomain(), nil
 }
 
-func (r *PgRepository) IncrementClicks(short string) error {
+func (r *PgRepository) IncrementClicks(ctx context.Context, short string) error {
 	query := `UPDATE links SET clicks = clicks + 1 WHERE short = $1`
 
-	_, err := r.pool.Exec(context.Background(), query, short)
+	_, err := r.pool.Exec(ctx, query, short)
 	if err != nil {
 		return fmt.Errorf("increment clicks for %s: %w", short, err)
 	}

@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"link-shortener/internal/domain"
 	"sync"
 )
@@ -17,11 +18,11 @@ func NewMemRepository() *MemRepository {
 	}
 }
 
-func (r *MemRepository) Create(link *domain.Link) error {
+func (r *MemRepository) Create(_ context.Context, link *domain.Link) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 	_, ok := r.db[link.Short]
-	if ok == true {
+	if ok {
 		return domain.ErrAlreadyExists
 	}
 
@@ -30,12 +31,12 @@ func (r *MemRepository) Create(link *domain.Link) error {
 	return nil
 }
 
-func (r *MemRepository) FindByShort(short string) (*domain.Link, error) {
+func (r *MemRepository) FindByShort(_ context.Context, short string) (*domain.Link, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 	link, ok := r.db[short]
 	if !ok {
-		return &domain.Link{}, domain.ErrNotFound
+		return nil, domain.ErrNotFound
 	}
 
 	result := &domain.Link{
@@ -48,7 +49,7 @@ func (r *MemRepository) FindByShort(short string) (*domain.Link, error) {
 	return result, nil
 }
 
-func (r *MemRepository) FindByOriginal(original string) (*domain.Link, error) {
+func (r *MemRepository) FindByOriginal(_ context.Context, original string) (*domain.Link, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 	for _, link := range r.db {
@@ -63,10 +64,10 @@ func (r *MemRepository) FindByOriginal(original string) (*domain.Link, error) {
 		}
 	}
 
-	return &domain.Link{}, domain.ErrNotFound
+	return nil, domain.ErrNotFound
 }
 
-func (r *MemRepository) IncrementClicks(short string) error {
+func (r *MemRepository) IncrementClicks(_ context.Context, short string) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 	link, ok := r.db[short]

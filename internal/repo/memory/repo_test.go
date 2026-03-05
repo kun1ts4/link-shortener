@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"link-shortener/internal/domain"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 )
 
 func TestMemoryRepoCreate(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemRepository()
 
 	link := &domain.Link{
@@ -19,10 +21,10 @@ func TestMemoryRepoCreate(t *testing.T) {
 		CreatedAt: time.Now(),
 	}
 
-	err := repo.Create(link)
+	err := repo.Create(ctx, link)
 	require.NoError(t, err)
 
-	found, err := repo.FindByShort("abc012")
+	found, err := repo.FindByShort(ctx, "abc012")
 	require.NoError(t, err)
 
 	assert.Equal(t, link.Original, found.Original)
@@ -31,6 +33,7 @@ func TestMemoryRepoCreate(t *testing.T) {
 }
 
 func TestMemoryRepoCreateDuplicate(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemRepository()
 
 	link := &domain.Link{
@@ -40,14 +43,15 @@ func TestMemoryRepoCreateDuplicate(t *testing.T) {
 		CreatedAt: time.Now(),
 	}
 
-	err := repo.Create(link)
+	err := repo.Create(ctx, link)
 	require.NoError(t, err)
 
-	err = repo.Create(link)
+	err = repo.Create(ctx, link)
 	assert.ErrorIs(t, err, domain.ErrAlreadyExists)
 }
 
 func TestMemoryRepoFindByOriginal(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemRepository()
 
 	link := &domain.Link{
@@ -57,10 +61,10 @@ func TestMemoryRepoFindByOriginal(t *testing.T) {
 		CreatedAt: time.Now(),
 	}
 
-	err := repo.Create(link)
+	err := repo.Create(ctx, link)
 	require.NoError(t, err)
 
-	found, err := repo.FindByOriginal("https://google.com")
+	found, err := repo.FindByOriginal(ctx, "https://google.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, link.Original, found.Original)
@@ -69,6 +73,7 @@ func TestMemoryRepoFindByOriginal(t *testing.T) {
 }
 
 func TestMemoryRepoIncrement(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemRepository()
 
 	link := &domain.Link{
@@ -78,13 +83,13 @@ func TestMemoryRepoIncrement(t *testing.T) {
 		CreatedAt: time.Now(),
 	}
 
-	err := repo.Create(link)
+	err := repo.Create(ctx, link)
 	require.NoError(t, err)
 
-	err = repo.IncrementClicks("abc012")
+	err = repo.IncrementClicks(ctx, "abc012")
 	require.NoError(t, err)
 
-	found, err := repo.FindByShort("abc012")
+	found, err := repo.FindByShort(ctx, "abc012")
 	require.NoError(t, err)
 
 	assert.Equal(t, link.Original, found.Original)
@@ -93,14 +98,15 @@ func TestMemoryRepoIncrement(t *testing.T) {
 }
 
 func TestMemoryRepoNotFound(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemRepository()
 
-	_, err := repo.FindByShort("not exist")
+	_, err := repo.FindByShort(ctx, "not exist")
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 
-	_, err = repo.FindByOriginal("https://not.exist")
+	_, err = repo.FindByOriginal(ctx, "https://not.exist")
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 
-	err = repo.IncrementClicks("not exist")
+	err = repo.IncrementClicks(ctx, "not exist")
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 }
