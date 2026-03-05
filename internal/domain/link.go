@@ -5,7 +5,6 @@ import (
 )
 
 type Link struct {
-	ID        int64
 	Original  string
 	Short     string
 	Clicks    int64

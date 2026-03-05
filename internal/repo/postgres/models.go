@@ -15,7 +15,6 @@ type LinkDB struct {
 
 func (l *LinkDB) ToDomain() *domain.Link {
 	return &domain.Link{
-		ID:        l.ID,
 		Original:  l.Original,
 		Short:     l.Short,
 		Clicks:    l.Clicks,
@@ -25,7 +24,6 @@ func (l *LinkDB) ToDomain() *domain.Link {
 
 func FromDomain(link *domain.Link) *LinkDB {
 	return &LinkDB{
-		ID:        link.ID,
 		Original:  link.Original,
 		Short:     link.Short,
 		Clicks:    link.Clicks,
