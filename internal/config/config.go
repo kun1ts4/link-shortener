@@ -8,12 +8,12 @@ import (
 )
 
 type Config struct {
+	Env       string          `yaml:"env"`
 	Server    ServerConfig    `yaml:"server"`
 	HTTP      HTTPConfig      `yaml:"http"`
 	Storage   StorageConfig   `yaml:"storage"`
 	RateLimit RateLimitConfig `yaml:"rate_limit"`
 	Shortener ShortenerConfig `yaml:"shortener"`
-	Database  DatabaseConfig  `yaml:"-"`
 }
 
 type ServerConfig struct {
@@ -37,7 +37,9 @@ type MemoryConfig struct {
 }
 
 type PostgresConfig struct {
-	MaxConnections int `yaml:"max_connections"`
+	MaxConnections int32 `yaml:"max_connections"`
+	MinConnections int32 `yaml:"min_connections"`
+	DSN            string
 }
 
 type RateLimitConfig struct {
@@ -46,13 +48,8 @@ type RateLimitConfig struct {
 }
 
 type ShortenerConfig struct {
-	ShortLength  int    `yaml:"short_length"`
-	Alphabet     string `yaml:"alphabet"`
-	MaxURLLength int    `yaml:"max_url_length"`
-}
-
-type DatabaseConfig struct {
-	DSN string
+	ShortLength int    `yaml:"short_length"`
+	Alphabet    string `yaml:"alphabet"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {
@@ -66,7 +63,7 @@ func LoadConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("parse config file: %w", err)
 	}
 
-	cfg.Database.DSN = configPostgresDSN()
+	cfg.Storage.Postgres.DSN = configPostgresDSN()
 
 	return cfg, nil
 }
