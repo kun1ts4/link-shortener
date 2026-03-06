@@ -32,7 +32,7 @@ func TestLoadConfig(t *testing.T) {
 		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		"testuser", "testpass", "testhost", "2345", "testdb",
 	)
-	assert.Equal(t, expectedDSN, cfg.Database.DSN)
+	assert.Equal(t, expectedDSN, cfg.Storage.Postgres.DSN)
 }
 
 func TestLoadConfig_DefaultDSN(t *testing.T) {
@@ -53,7 +53,7 @@ func TestLoadConfig_DefaultDSN(t *testing.T) {
 	cfg, err := LoadConfig(path)
 	require.NoError(t, err)
 
-	assert.Equal(t, "postgres://postgres:postgres@localhost:5432/link_shortener?sslmode=disable", cfg.Database.DSN)
+	assert.Equal(t, "postgres://postgres:postgres@localhost:5432/link_shortener?sslmode=disable", cfg.Storage.Postgres.DSN)
 }
 
 func TestLoadConfig_FileNotFound(t *testing.T) {

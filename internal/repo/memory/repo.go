@@ -2,27 +2,33 @@ package memory
 
 import (
 	"context"
+	"link-shortener/internal/config"
 	"link-shortener/internal/domain"
 	"sync"
 )
 
 type MemRepository struct {
-	m  sync.RWMutex
-	db map[string]domain.Link
+	m       sync.RWMutex
+	db      map[string]domain.Link
+	maxSize int
 }
 
-func NewMemRepository() *MemRepository {
+func NewMemRepository(cfg config.MemoryConfig) *MemRepository {
 	return &MemRepository{
-		m:  sync.RWMutex{},
-		db: make(map[string]domain.Link),
+		db:      make(map[string]domain.Link),
+		maxSize: cfg.MaxSize,
 	}
 }
 
 func (r *MemRepository) Create(_ context.Context, link *domain.Link) error {
 	r.m.Lock()
 	defer r.m.Unlock()
-	_, ok := r.db[link.Short]
-	if ok {
+
+	if r.maxSize > 0 && len(r.db) >= r.maxSize {
+		return domain.ErrStorageFull
+	}
+
+	if _, ok := r.db[link.Short]; ok {
 		return domain.ErrAlreadyExists
 	}
 
@@ -39,14 +45,7 @@ func (r *MemRepository) FindByShort(_ context.Context, short string) (*domain.Li
 		return nil, domain.ErrNotFound
 	}
 
-	result := &domain.Link{
-		Original:  link.Original,
-		Short:     link.Short,
-		Clicks:    link.Clicks,
-		CreatedAt: link.CreatedAt,
-	}
-
-	return result, nil
+	return &link, nil
 }
 
 func (r *MemRepository) FindByOriginal(_ context.Context, original string) (*domain.Link, error) {
@@ -54,13 +53,7 @@ func (r *MemRepository) FindByOriginal(_ context.Context, original string) (*dom
 	defer r.m.RUnlock()
 	for _, link := range r.db {
 		if link.Original == original {
-			result := &domain.Link{
-				Original:  link.Original,
-				Short:     link.Short,
-				Clicks:    link.Clicks,
-				CreatedAt: link.CreatedAt,
-			}
-			return result, nil
+			return &link, nil
 		}
 	}
 

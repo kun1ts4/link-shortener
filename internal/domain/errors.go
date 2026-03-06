@@ -1,11 +1,10 @@
 package domain
 
-import (
-	"fmt"
-)
+import "errors"
 
 var (
-	ErrNotFound      = fmt.Errorf("not found")
-	ErrInvalid       = fmt.Errorf("invalid input")
-	ErrAlreadyExists = fmt.Errorf("already exists")
+	ErrNotFound      = errors.New("not found")
+	ErrInvalid       = errors.New("invalid input")
+	ErrAlreadyExists = errors.New("already exists")
+	ErrStorageFull   = errors.New("storage is full")
 )

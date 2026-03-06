@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"link-shortener/internal/config"
 	"link-shortener/internal/domain"
 	"testing"
 	"time"
@@ -12,7 +13,7 @@ import (
 
 func TestMemoryRepoCreate(t *testing.T) {
 	ctx := context.Background()
-	repo := NewMemRepository()
+	repo := NewMemRepository(config.MemoryConfig{})
 
 	link := &domain.Link{
 		Original:  "https://google.com",
@@ -34,7 +35,7 @@ func TestMemoryRepoCreate(t *testing.T) {
 
 func TestMemoryRepoCreateDuplicate(t *testing.T) {
 	ctx := context.Background()
-	repo := NewMemRepository()
+	repo := NewMemRepository(config.MemoryConfig{})
 
 	link := &domain.Link{
 		Original:  "https://google.com",
@@ -50,9 +51,20 @@ func TestMemoryRepoCreateDuplicate(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrAlreadyExists)
 }
 
+func TestMemoryRepoStorageFull(t *testing.T) {
+	ctx := context.Background()
+	repo := NewMemRepository(config.MemoryConfig{MaxSize: 1})
+
+	err := repo.Create(ctx, &domain.Link{Original: "https://google.com", Short: "short00001", CreatedAt: time.Now()})
+	require.NoError(t, err)
+
+	err = repo.Create(ctx, &domain.Link{Original: "https://yandex.ru", Short: "short00002", CreatedAt: time.Now()})
+	assert.ErrorIs(t, err, domain.ErrStorageFull)
+}
+
 func TestMemoryRepoFindByOriginal(t *testing.T) {
 	ctx := context.Background()
-	repo := NewMemRepository()
+	repo := NewMemRepository(config.MemoryConfig{})
 
 	link := &domain.Link{
 		Original:  "https://google.com",
@@ -74,7 +86,7 @@ func TestMemoryRepoFindByOriginal(t *testing.T) {
 
 func TestMemoryRepoIncrement(t *testing.T) {
 	ctx := context.Background()
-	repo := NewMemRepository()
+	repo := NewMemRepository(config.MemoryConfig{})
 
 	link := &domain.Link{
 		Original:  "https://google.com",
@@ -99,7 +111,7 @@ func TestMemoryRepoIncrement(t *testing.T) {
 
 func TestMemoryRepoNotFound(t *testing.T) {
 	ctx := context.Background()
-	repo := NewMemRepository()
+	repo := NewMemRepository(config.MemoryConfig{})
 
 	_, err := repo.FindByShort(ctx, "not exist")
 	assert.ErrorIs(t, err, domain.ErrNotFound)

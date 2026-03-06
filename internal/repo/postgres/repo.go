@@ -2,11 +2,13 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"link-shortener/internal/config"
 	"link-shortener/internal/domain"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -22,6 +24,9 @@ func NewPostgresRepository(cfg config.PostgresConfig) (*PgRepository, error) {
 
 	poolConfig.MaxConns = cfg.MaxConnections
 	poolConfig.MinConns = cfg.MinConnections
+	poolConfig.MaxConnLifetime = 1 * time.Hour
+	poolConfig.MaxConnIdleTime = 30 * time.Minute
+	poolConfig.HealthCheckPeriod = 1 * time.Minute
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
@@ -65,7 +70,10 @@ func (r *PgRepository) FindByShort(ctx context.Context, short string) (*domain.L
 	var dbLink LinkDB
 	err := r.pool.QueryRow(ctx, query, short).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
 	if err != nil {
-		return nil, domain.ErrNotFound
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, fmt.Errorf("find by short: %w", err)
 	}
 
 	return dbLink.ToDomain(), nil
@@ -77,7 +85,10 @@ func (r *PgRepository) FindByOriginal(ctx context.Context, original string) (*do
 	var dbLink LinkDB
 	err := r.pool.QueryRow(ctx, query, original).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
 	if err != nil {
-		return nil, domain.ErrNotFound
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, fmt.Errorf("find by original: %w", err)
 	}
 
 	return dbLink.ToDomain(), nil
@@ -86,9 +97,12 @@ func (r *PgRepository) FindByOriginal(ctx context.Context, original string) (*do
 func (r *PgRepository) IncrementClicks(ctx context.Context, short string) error {
 	query := `UPDATE links SET clicks = clicks + 1 WHERE short = $1`
 
-	_, err := r.pool.Exec(ctx, query, short)
+	tag, err := r.pool.Exec(ctx, query, short)
 	if err != nil {
 		return fmt.Errorf("increment clicks for %s: %w", short, err)
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
 	}
 
 	return nil
