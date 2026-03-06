@@ -15,6 +15,5 @@ func (h *Handler) NewRouter() *chi.Mux {
 
 	r.Post("/", h.CreateLink)
 	r.Get("/{short}", h.GetLink)
-	r.Get("/{short}.json", h.GetLink)
 	return r
 }

@@ -28,6 +28,7 @@ type HTTPConfig struct {
 }
 
 type StorageConfig struct {
+	Type     string
 	Memory   MemoryConfig   `yaml:"memory"`
 	Postgres PostgresConfig `yaml:"postgres"`
 }
@@ -37,8 +38,10 @@ type MemoryConfig struct {
 }
 
 type PostgresConfig struct {
-	MaxConnections int32 `yaml:"max_connections"`
-	MinConnections int32 `yaml:"min_connections"`
+	MaxConnections int32  `yaml:"max_connections"`
+	MinConnections int32  `yaml:"min_connections"`
+	RetryCount     int    `yaml:"retry_count"`
+	RetryDelay     string `yaml:"retry_delay"`
 	DSN            string
 }
 
@@ -63,6 +66,7 @@ func LoadConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("parse config file: %w", err)
 	}
 
+	cfg.Storage.Type = getEnv("STORAGE_TYPE", "memory")
 	cfg.Storage.Postgres.DSN = configPostgresDSN()
 
 	return cfg, nil

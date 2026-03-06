@@ -5,15 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"link-shortener/internal/domain"
-	"link-shortener/internal/random"
+	"strconv"
 )
 
 type ShortenerUseCase struct {
-	gen  random.LinkGen
+	gen  domain.LinkGen
 	repo domain.Repository
 }
 
-func NewShortenerUseCase(gen random.LinkGen, repo domain.Repository) *ShortenerUseCase {
+func NewShortenerUseCase(gen domain.LinkGen, repo domain.Repository) *ShortenerUseCase {
 	return &ShortenerUseCase{
 		gen:  gen,
 		repo: repo,
@@ -27,6 +27,28 @@ func (s *ShortenerUseCase) CreateShort(ctx context.Context, original string) (*d
 	}
 
 	short := s.gen.Generate(original)
+
+	// проверка и устранение коллизий
+
+	attempt := 0
+	for {
+		found, foundErr := s.repo.FindByShort(ctx, short)
+		if foundErr != nil && !errors.Is(foundErr, domain.ErrNotFound) {
+			return nil, fmt.Errorf("collision check: %w", foundErr)
+		}
+
+		if errors.Is(foundErr, domain.ErrNotFound) {
+			break
+		}
+
+		if found.Original == original {
+			return found, nil
+		}
+
+		short = s.gen.Generate(original + strconv.Itoa(attempt))
+		attempt++
+	}
+
 	link, err := domain.NewLink(original, short)
 	if err != nil {
 		return nil, fmt.Errorf("build link: %w", err)
@@ -34,9 +56,6 @@ func (s *ShortenerUseCase) CreateShort(ctx context.Context, original string) (*d
 
 	err = s.repo.Create(ctx, link)
 	if err != nil {
-		if errors.Is(err, domain.ErrAlreadyExists) {
-			return s.repo.FindByShort(ctx, short)
-		}
 		return nil, fmt.Errorf("create link: %w", err)
 	}
 

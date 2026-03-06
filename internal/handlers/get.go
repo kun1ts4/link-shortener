@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type GetLinkJsonResponse struct {
@@ -15,7 +16,7 @@ type GetLinkJsonResponse struct {
 
 func (h *Handler) GetLink(w http.ResponseWriter, r *http.Request) {
 	short := chi.URLParam(r, "short")
-	format := chi.URLParam(r, "format")
+	format, _ := r.Context().Value(middleware.URLFormatCtxKey).(string)
 
 	link, err := h.uc.GetOriginalLink(r.Context(), short)
 	if err != nil {
@@ -39,16 +40,16 @@ func (h *Handler) GetLink(w http.ResponseWriter, r *http.Request) {
 			URL: link.Original,
 		})
 		if err != nil {
-			h.log.Info("error marshaling link", "error", err)
+			h.log.Error("error marshaling link", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		_, err = w.Write(resp)
 		if err != nil {
-			h.log.Info("failed to write response", "error", err)
+			h.log.Error("failed to write response", "error", err)
 		}
 		return
 	}
