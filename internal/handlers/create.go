@@ -36,6 +36,9 @@ func (h *Handler) CreateLink(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, domain.ErrInvalid) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
+		} else if errors.Is(err, domain.ErrStorageFull) {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
 		}
 		h.log.Info("create short failed", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -61,7 +61,7 @@ func main() {
 
 	uc := usecase.NewShortenerUseCase(linkGen, repo)
 
-	handler := handlers.NewHandler(uc, log)
+	handler := handlers.NewHandler(uc, log, &cfg.RateLimit)
 	r := handler.NewRouter()
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)

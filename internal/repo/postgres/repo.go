@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -58,6 +59,9 @@ func (r *PgRepository) Create(ctx context.Context, link *domain.Link) error {
 	query := `INSERT INTO links (original, short, clicks, created_at) VALUES ($1, $2, $3, $4)`
 	_, err := r.pool.Exec(ctx, query, dbLink.Original, dbLink.Short, dbLink.Clicks, dbLink.CreatedAt)
 	if err != nil {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok && pgErr.Code == "23505" {
+			return domain.ErrAlreadyExists
+		}
 		return fmt.Errorf("create link: %w", err)
 	}
 
