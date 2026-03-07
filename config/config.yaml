@@ -20,7 +20,6 @@ storage:
 
 rate_limit:
     requests_per_second: 100
-    burst: 200
 
 shortener:
     short_length: 10

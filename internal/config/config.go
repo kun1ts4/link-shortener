@@ -47,7 +47,6 @@ type PostgresConfig struct {
 
 type RateLimitConfig struct {
 	RequestsPerSecond int `yaml:"requests_per_second"`
-	Burst             int `yaml:"burst"`
 }
 
 type ShortenerConfig struct {
