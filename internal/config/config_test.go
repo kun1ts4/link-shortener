@@ -44,9 +44,9 @@ func TestLoadConfig_DefaultDSN(t *testing.T) {
 
 	for _, key := range []string{"POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB"} {
 		old, ok := os.LookupEnv(key)
-		os.Unsetenv(key)
+		_ = os.Unsetenv(key)
 		if ok {
-			t.Cleanup(func() { os.Setenv(key, old) })
+			t.Cleanup(func() { _ = os.Setenv(key, old) })
 		}
 	}
 
@@ -65,7 +65,7 @@ func makeTempConfig(t *testing.T, content string) string {
 	t.Helper()
 	tmp, err := os.CreateTemp("", "config-*.yaml")
 	require.NoError(t, err)
-	t.Cleanup(func() { os.Remove(tmp.Name()) })
+	t.Cleanup(func() { _ = os.Remove(tmp.Name()) })
 	require.NoError(t, os.WriteFile(tmp.Name(), []byte(content), 0o644))
 	return tmp.Name()
 }

@@ -23,9 +23,7 @@ func NewLinkGen(cfg config.ShortenerConfig) *LinkGen {
 
 func (g *LinkGen) Generate(original string) string {
 	hash := sha256.Sum256([]byte(original))
-
 	hashString := hex.EncodeToString(hash[:])
-
 	result := make([]byte, g.length)
 
 	for i := 0; i < g.length; i++ {
@@ -35,11 +33,9 @@ func (g *LinkGen) Generate(original string) string {
 		secondVal := hexToInt(hashString[(pos+1)%len(hashString)])
 
 		num := firstVal*16 + secondVal
-
 		alphabetIndex := num % len(g.alphabet)
 		result[i] = byte(g.alphabet[alphabetIndex])
 	}
-
 	return string(result)
 }
 

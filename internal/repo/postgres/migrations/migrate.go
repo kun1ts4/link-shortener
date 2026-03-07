@@ -17,7 +17,7 @@ func Migrate(dsn string) error {
 	if err != nil {
 		return fmt.Errorf("open db: %w", err)
 	}
-	defer db.Close()
+	defer db.Close() //nolint:errcheck
 
 	goose.SetBaseFS(migrations)
 	err = goose.SetDialect("postgres")

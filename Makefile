@@ -1,4 +1,4 @@
-.PHONY: run-postgres run-memory stop clean test
+.PHONY: run-postgres run-memory stop clean test lint ci
 
 run-postgres:
 	STORAGE_TYPE=postgres docker compose up --build
@@ -14,4 +14,10 @@ clean:
 
 test:
 	go test -v ./...
+
+lint:
+	golangci-lint run ./...
+
+ci:
+	act push
 

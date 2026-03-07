@@ -13,8 +13,14 @@ type Link struct {
 }
 
 func NewLink(original, short string) (*Link, error) {
-	_, err := url.ParseRequestURI(original)
+	u, err := url.ParseRequestURI(original)
 	if err != nil {
+		return nil, ErrInvalid
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return nil, ErrInvalid
+	}
+	if u.Host == "" {
 		return nil, ErrInvalid
 	}
 
