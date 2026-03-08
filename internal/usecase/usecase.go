@@ -5,27 +5,25 @@ import (
 	"errors"
 	"fmt"
 	"link-shortener/internal/domain"
+	"log/slog"
 	"strconv"
 )
 
 type ShortenerUseCase struct {
 	gen  domain.LinkGen
 	repo domain.Repository
+	log  *slog.Logger
 }
 
-func NewShortenerUseCase(gen domain.LinkGen, repo domain.Repository) *ShortenerUseCase {
+func NewShortenerUseCase(gen domain.LinkGen, repo domain.Repository, log *slog.Logger) *ShortenerUseCase {
 	return &ShortenerUseCase{
 		gen:  gen,
 		repo: repo,
+		log:  log,
 	}
 }
 
 func (s *ShortenerUseCase) CreateShort(ctx context.Context, original string) (*domain.Link, error) {
-	existing, err := s.repo.FindByOriginal(ctx, original)
-	if err == nil && existing != nil {
-		return existing, nil
-	}
-
 	short := s.gen.Generate(original)
 
 	// проверка и устранение коллизий
@@ -45,6 +43,7 @@ func (s *ShortenerUseCase) CreateShort(ctx context.Context, original string) (*d
 			return found, nil
 		}
 
+		s.log.Debug("collision found", "short", short, "attempt", attempt)
 		short = s.gen.Generate(original + strconv.Itoa(attempt))
 		attempt++
 	}
@@ -59,6 +58,7 @@ func (s *ShortenerUseCase) CreateShort(ctx context.Context, original string) (*d
 		return nil, fmt.Errorf("create link: %w", err)
 	}
 
+	s.log.Info("short link created", "short", link.Short)
 	return link, nil
 }
 
@@ -72,5 +72,6 @@ func (s *ShortenerUseCase) GetOriginalLink(ctx context.Context, short string) (*
 		return nil, fmt.Errorf("increment clicks: %w", err)
 	}
 
+	s.log.Debug("redirect", "short", short, "original", link.Original)
 	return link, nil
 }

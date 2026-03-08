@@ -59,7 +59,7 @@ func main() {
 		log.Info("using in-memory storage", "max_size", cfg.Storage.Memory.MaxSize)
 	}
 
-	uc := usecase.NewShortenerUseCase(linkGen, repo)
+	uc := usecase.NewShortenerUseCase(linkGen, repo, log)
 
 	handler := handlers.NewHandler(uc, log, &cfg.RateLimit)
 	r := handler.NewRouter()
