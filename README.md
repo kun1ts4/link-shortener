@@ -1,5 +1,7 @@
 # link shortener
 
+[![CI](https://github.com/kun1ts4/link-shortener/actions/workflows/ci.yml/badge.svg)](https://github.com/kun1ts4/link-shortener/actions/workflows/ci.yml)
+
 ## Запуск
 
 1. С хранилищем PostgreSQL:
