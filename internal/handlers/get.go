@@ -11,7 +11,8 @@ import (
 )
 
 type GetLinkJsonResponse struct {
-	URL string `json:"url"`
+	URL    string `json:"url"`
+	Clicks int64  `json:"clicks"`
 }
 
 func (h *Handler) GetLink(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +38,8 @@ func (h *Handler) GetLink(w http.ResponseWriter, r *http.Request) {
 
 	if format == "json" {
 		resp, err := json.Marshal(&GetLinkJsonResponse{
-			URL: link.Original,
+			URL:    link.Original,
+			Clicks: link.Clicks,
 		})
 		if err != nil {
 			h.log.Error("error marshaling link", "error", err)
