@@ -19,7 +19,7 @@ storage:
         retry_delay: 3s
 
 rate_limit:
-    requests_per_second: 100
+    requests_per_second: 1000
 
 shortener:
     short_length: 10
