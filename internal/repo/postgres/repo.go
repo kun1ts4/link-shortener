@@ -83,21 +83,6 @@ func (r *PgRepository) FindByShort(ctx context.Context, short string) (*domain.L
 	return dbLink.ToDomain(), nil
 }
 
-func (r *PgRepository) FindByOriginal(ctx context.Context, original string) (*domain.Link, error) {
-	query := `SELECT id, original, short, clicks, created_at FROM links WHERE original = $1`
-
-	var dbLink LinkDB
-	err := r.pool.QueryRow(ctx, query, original).Scan(&dbLink.ID, &dbLink.Original, &dbLink.Short, &dbLink.Clicks, &dbLink.CreatedAt)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("find by original: %w", err)
-	}
-
-	return dbLink.ToDomain(), nil
-}
-
 func (r *PgRepository) IncrementClicks(ctx context.Context, short string) error {
 	query := `UPDATE links SET clicks = clicks + 1 WHERE short = $1`
 

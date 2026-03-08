@@ -48,18 +48,6 @@ func (r *MemRepository) FindByShort(_ context.Context, short string) (*domain.Li
 	return &link, nil
 }
 
-func (r *MemRepository) FindByOriginal(_ context.Context, original string) (*domain.Link, error) {
-	r.m.RLock()
-	defer r.m.RUnlock()
-	for _, link := range r.db {
-		if link.Original == original {
-			return &link, nil
-		}
-	}
-
-	return nil, domain.ErrNotFound
-}
-
 func (r *MemRepository) IncrementClicks(_ context.Context, short string) error {
 	r.m.Lock()
 	defer r.m.Unlock()
