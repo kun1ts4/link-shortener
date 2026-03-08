@@ -21,27 +21,27 @@ func (h *Handler) CreateLink(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		h.log.Info("reading body", "error", err)
-		w.WriteHeader(http.StatusBadRequest)
+		writeError(w, http.StatusBadRequest, "error read request")
 		return
 	}
 
 	req := CreateLinkRequest{}
 	if err = json.Unmarshal(body, &req); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
 
 	link, err := h.uc.CreateShort(r.Context(), req.URL)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalid) {
-			w.WriteHeader(http.StatusBadRequest)
+			writeError(w, http.StatusBadRequest, "invalid URL")
 			return
 		} else if errors.Is(err, domain.ErrStorageFull) {
-			w.WriteHeader(http.StatusServiceUnavailable)
+			writeError(w, http.StatusServiceUnavailable, "storage full")
 			return
 		}
 		h.log.Info("create short failed", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		writeError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
@@ -51,7 +51,7 @@ func (h *Handler) CreateLink(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		h.log.Info("marshalling response", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		writeError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 

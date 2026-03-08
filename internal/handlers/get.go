@@ -22,16 +22,16 @@ func (h *Handler) GetLink(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			h.log.Info("not found", "error", err)
-			w.WriteHeader(http.StatusNotFound)
+			writeError(w, http.StatusNotFound, "link not found")
 			return
 		} else if errors.Is(err, domain.ErrInvalid) {
 			h.log.Info("invalid", "error", err)
-			w.WriteHeader(http.StatusBadRequest)
+			writeError(w, http.StatusBadRequest, "invalid short link")
 			return
 		}
 
 		h.log.Info("error getting link", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		writeError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
@@ -41,7 +41,7 @@ func (h *Handler) GetLink(w http.ResponseWriter, r *http.Request) {
 		})
 		if err != nil {
 			h.log.Error("error marshaling link", "error", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			writeError(w, http.StatusInternalServerError, "internal server error")
 			return
 		}
 
