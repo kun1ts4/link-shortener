@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"link-shortener/internal/domain"
 	"log/slog"
 	"strconv"
+
+	"github.com/kun1ts4/link-shortener/internal/domain"
 )
 
 type ShortenerUseCase struct {

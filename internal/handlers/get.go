@@ -3,8 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"link-shortener/internal/domain"
+	"fmt"
 	"net/http"
+
+	"github.com/kun1ts4/link-shortener/internal/domain"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,6 +20,12 @@ type GetLinkJsonResponse struct {
 func (h *Handler) GetLink(w http.ResponseWriter, r *http.Request) {
 	short := chi.URLParam(r, "short")
 	format, _ := r.Context().Value(middleware.URLFormatCtxKey).(string)
+
+	if err := validateURL(short); err != nil {
+		h.log.Info("invalid short link", "short", short, "error", err)
+		writeError(w, http.StatusBadRequest, "invalid short link")
+		return
+	}
 
 	link, err := h.uc.GetOriginalLink(r.Context(), short)
 	if err != nil {
@@ -56,5 +64,13 @@ func (h *Handler) GetLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, link.Original, http.StatusMovedPermanently)
+	writeError(w, http.StatusBadRequest, "use .json format to get link")
+}
+
+func validateURL(url string) error {
+	if len(url) != 10 {
+		return fmt.Errorf("invalid url")
+	}
+
+	return nil
 }

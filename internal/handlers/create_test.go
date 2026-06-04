@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"link-shortener/internal/config"
-	"link-shortener/internal/domain"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/kun1ts4/link-shortener/internal/config"
+	"github.com/kun1ts4/link-shortener/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

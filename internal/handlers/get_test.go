@@ -3,11 +3,12 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"link-shortener/internal/domain"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/kun1ts4/link-shortener/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

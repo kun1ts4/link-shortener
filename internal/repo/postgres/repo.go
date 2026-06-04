@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"link-shortener/internal/config"
-	"link-shortener/internal/domain"
 	"time"
+
+	"github.com/kun1ts4/link-shortener/internal/config"
+	"github.com/kun1ts4/link-shortener/internal/domain"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"

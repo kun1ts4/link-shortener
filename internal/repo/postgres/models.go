@@ -1,8 +1,9 @@
 package postgres
 
 import (
-	"link-shortener/internal/domain"
 	"time"
+
+	"github.com/kun1ts4/link-shortener/internal/domain"
 )
 
 type LinkDB struct {

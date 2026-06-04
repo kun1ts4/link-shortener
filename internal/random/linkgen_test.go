@@ -1,8 +1,9 @@
 package random
 
 import (
-	"link-shortener/internal/config"
 	"testing"
+
+	"github.com/kun1ts4/link-shortener/internal/config"
 
 	"github.com/stretchr/testify/assert"
 )

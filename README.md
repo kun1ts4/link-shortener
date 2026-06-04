@@ -18,9 +18,11 @@ make run-memory
 
 ## API
 
-- `POST /` создание короткой ссылки
-- `GET /{short}` редирект на оригинальную ссылку
-- `GET /{short}.json` получение короткой ссылке (JSON-ответ)
+- `POST /` — создание короткой ссылки. Тело запроса: JSON (`Content-Type: application/json`) с полем `url`. Ответ: `201` и JSON в теле с полями `short` и `original`.
+- `GET /{short}.json` — получение информации о короткой ссылке в формате JSON (только JSON). Ответы:
+  - 200: {"url":"<original>", "clicks":<number>} при успехе
+  - 404: ссылка не найдена
+  - 400: неверный формат запроса (например, если использовать `GET /{short}` без суффикса `.json`)
 
 ## Алгоритм сокращения
 
@@ -39,3 +41,24 @@ make run-memory
 Секреты базы (пример, необходимо создать .env):
 
 `.env.example`
+
+## Примеры использования
+
+Создать короткую ссылку:
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  --data '{"url":"https://example.com/very/long/url"}' \
+  http://localhost:8080/
+# -> в ответе будет JSON, например: {"short":"jonidmKLIk","original":"https://example.com/very/long/url"}
+```
+
+Получить данные короткой ссылки (JSON):
+
+```bash
+curl http://localhost:8080/jonidmKLIk.json
+# -> {"url":"https://example.com/very/long/url","clicks":0}
+```
+
+Если вызвать `GET /jonidmKLIk` (без `.json`), сервис вернёт 400 и сообщение: "use .json format to get link"

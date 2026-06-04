@@ -3,7 +3,8 @@ package random
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"link-shortener/internal/config"
+
+	"github.com/kun1ts4/link-shortener/internal/config"
 )
 
 type LinkGen struct {

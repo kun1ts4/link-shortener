@@ -4,21 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"link-shortener/internal/config"
-	"link-shortener/internal/domain"
-	"link-shortener/internal/handlers"
-	"link-shortener/internal/logger"
-	"link-shortener/internal/random"
-	"link-shortener/internal/repo/memory"
-	"link-shortener/internal/repo/postgres"
-	"link-shortener/internal/repo/postgres/migrations"
-	"link-shortener/internal/usecase"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/kun1ts4/link-shortener/internal/config"
+	"github.com/kun1ts4/link-shortener/internal/domain"
+	"github.com/kun1ts4/link-shortener/internal/handlers"
+	"github.com/kun1ts4/link-shortener/internal/logger"
+	"github.com/kun1ts4/link-shortener/internal/random"
+	"github.com/kun1ts4/link-shortener/internal/repo/memory"
+	"github.com/kun1ts4/link-shortener/internal/repo/postgres"
+	"github.com/kun1ts4/link-shortener/internal/repo/postgres/migrations"
+	"github.com/kun1ts4/link-shortener/internal/usecase"
 )
 
 const configPath = "./config/config.yaml"
@@ -26,8 +27,10 @@ const configPath = "./config/config.yaml"
 func main() {
 	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "failed to load config: %v\n", err)
+		os.Exit(1)
 	}
+
 	log := logger.NewLogger(cfg.Env)
 
 	log.Info("starting link-shortener",

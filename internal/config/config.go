@@ -68,7 +68,48 @@ func LoadConfig(configPath string) (*Config, error) {
 	cfg.Storage.Type = getEnv("STORAGE_TYPE", "memory")
 	cfg.Storage.Postgres.DSN = configPostgresDSN()
 
+	if err := cfg.Validate(); err != nil {
+		return nil, fmt.Errorf("validate config: %w", err)
+	}
+
 	return cfg, nil
+}
+
+func (c *Config) Validate() error {
+	if c.Env == "" {
+		return fmt.Errorf("env is required")
+	}
+	if c.Server.Host == "" {
+		return fmt.Errorf("server.host is required")
+	}
+	if c.Server.Port <= 0 || c.Server.Port > 65535 {
+		return fmt.Errorf("server.port must be between 1 and 65535")
+	}
+	if c.HTTP.ReadTimeout == "" {
+		return fmt.Errorf("http.read_timeout is required")
+	}
+	if c.HTTP.WriteTimeout == "" {
+		return fmt.Errorf("http.write_timeout is required")
+	}
+	if c.HTTP.IdleTimeout == "" {
+		return fmt.Errorf("http.idle_timeout is required")
+	}
+	if c.Storage.Type == "" {
+		return fmt.Errorf("storage.type is required")
+	}
+	if c.Storage.Type == "memory" && c.Storage.Memory.MaxSize <= 0 {
+		return fmt.Errorf("storage.memory.max_size must be greater than 0")
+	}
+	if c.RateLimit.RequestsPerSecond <= 0 {
+		return fmt.Errorf("rate_limit.requests_per_second must be greater than 0")
+	}
+	if c.Shortener.ShortLength <= 0 {
+		return fmt.Errorf("shortener.short_length must be greater than 0")
+	}
+	if c.Shortener.Alphabet == "" {
+		return fmt.Errorf("shortener.alphabet is required")
+	}
+	return nil
 }
 
 func configPostgresDSN() string {

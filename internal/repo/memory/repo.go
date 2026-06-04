@@ -2,9 +2,10 @@ package memory
 
 import (
 	"context"
-	"link-shortener/internal/config"
-	"link-shortener/internal/domain"
 	"sync"
+
+	"github.com/kun1ts4/link-shortener/internal/config"
+	"github.com/kun1ts4/link-shortener/internal/domain"
 )
 
 type MemRepository struct {
